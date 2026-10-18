@@ -53,8 +53,6 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
-        // Sisipkan token server saat ini ke dalam JWT
-        token.serverToken = process.env.RUNTIME_SERVER_TOKEN;
       }
       return token;
     },
@@ -70,17 +68,6 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
     maxAge: 8 * 60 * 60, // 8 jam
-  },
-  cookies: {
-    sessionToken: {
-      name: "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax" as const,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

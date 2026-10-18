@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 
@@ -24,9 +24,17 @@ export default function LoginPage() {
       toast.error("Email atau password salah");
     } else {
       sessionStorage.setItem("hasBrowserSession", "true");
-      // Full page navigation agar middleware baca cookie JWT yang baru
-      // dan redirect ke dashboard sesuai role secara server-side
-      window.location.href = "/";
+      // Dapatkan data session untuk mengetahui role
+      const session = await getSession();
+      const role = (session?.user as any)?.role;
+      const roleDashboard: Record<string, string> = {
+        ADMIN: "/admin",
+        LULUSAN: "/lulusan",
+        PERUSAHAAN: "/perusahaan",
+        KEPALA_SEKOLAH: "/kepala-sekolah",
+      };
+      const targetUrl = (role && roleDashboard[role]) || "/admin";
+      window.location.href = targetUrl;
     }
   }
 

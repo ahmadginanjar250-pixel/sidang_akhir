@@ -18,24 +18,16 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-    });
-
-    // ─── VALIDASI SERVER TOKEN ────────────────────────────────────────────────
-    if (token) {
-        const currentServerToken = process.env.RUNTIME_SERVER_TOKEN;
-        const tokenServerToken = token.serverToken as string | undefined;
-
-        if (!tokenServerToken || tokenServerToken !== currentServerToken) {
-            // JWT lama → hapus cookie, kirim ke landing page
-            const response = NextResponse.redirect(new URL("/", request.url));
-            response.cookies.delete("next-auth.session-token");
-            response.cookies.delete("__Secure-next-auth.session-token");
-            return response;
-        }
-    }
+    const token =
+        (await getToken({
+            req: request,
+            secret: process.env.NEXTAUTH_SECRET,
+        })) ||
+        (await getToken({
+            req: request,
+            secret: process.env.NEXTAUTH_SECRET,
+            cookieName: "next-auth.session-token",
+        }));
 
     // ─── SUDAH LOGIN + AKSES "/" atau "/login" → redirect ke dashboard ─────────
     if (token && (pathname === "/" || pathname === "/login")) {
@@ -46,13 +38,13 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // ─── BELUM LOGIN + AKSES PROTECTED → landing page "/" ─────────────────────
+    // ─── BELUM LOGIN + AKSES PROTECTED → redirect ke "/login" ─────────────────
     if (!token) {
         const isProtected = protectedRoutes.some((route) =>
             pathname.startsWith(route)
         );
         if (isProtected) {
-            return NextResponse.redirect(new URL("/", request.url));
+            return NextResponse.redirect(new URL("/login", request.url));
         }
     }
 

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Cache hasil dashboard di server selama 60 detik
-// Tanpa ini, setiap reload halaman = full query DB ulang
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   // Jalankan semua query secara paralel dengan field SELECT minimal
