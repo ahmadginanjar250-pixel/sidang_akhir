@@ -102,19 +102,41 @@ async function main() {
       role: "LULUSAN",
     },
   });
-  await prisma.lulusan.upsert({
-    where: { userId: userLulusan.id },
-    update: {},
-    create: {
-      userId: userLulusan.id,
-      nis: "1234567890",
-      nama: "Budi Santoso",
-      jurusanId: jurusanList[0].id, // TKJ
-      tahunLulus: 2024,
-      noHp: "081234567890",
-      alamat: "Jl. Mekarmukti No. 5, Cikarang Utara",
+  const existingLulusan = await prisma.lulusan.findFirst({
+    where: {
+      OR: [
+        { userId: userLulusan.id },
+        { nis: "1234567890" },
+      ],
     },
   });
+
+  if (existingLulusan) {
+    await prisma.lulusan.update({
+      where: { id: existingLulusan.id },
+      data: {
+        userId: userLulusan.id,
+        nis: "1234567890",
+        nama: "Budi Santoso",
+        jurusanId: jurusanList[0].id,
+        tahunLulus: 2024,
+        noHp: "081234567890",
+        alamat: "Jl. Mekarmukti No. 5, Cikarang Utara",
+      },
+    });
+  } else {
+    await prisma.lulusan.create({
+      data: {
+        userId: userLulusan.id,
+        nis: "1234567890",
+        nama: "Budi Santoso",
+        jurusanId: jurusanList[0].id,
+        tahunLulus: 2024,
+        noHp: "081234567890",
+        alamat: "Jl. Mekarmukti No. 5, Cikarang Utara",
+      },
+    });
+  }
   console.log("  ✅ Lulusan: budi.santoso@lulusan.com / lulusan123");
 
   console.log("\n🎉 Seeding selesai!\n");
